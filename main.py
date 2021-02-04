@@ -47,10 +47,11 @@ def parse_args():
 
 def main(args):
 
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
     os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
     os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
     os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
-    torch.device(args.device)
+    torch.device(device)
 
     transform_train = transforms.Compose([
                                           transforms.RandomCrop(32, padding=4),
@@ -68,8 +69,6 @@ def main(args):
     train_loader = torch.utils.data.DataLoader(train_set, batch_size=args.batch_size, shuffle=True, num_workers=2)
     val_set    = datasets.CIFAR10(root='./data', train=False, download=True, transform=transform_val)
     val_loader = torch.utils.data.DataLoader(val_set, batch_size=100, shuffle=True, num_workers=2)
-
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     model = VT(args).to(device)
     
