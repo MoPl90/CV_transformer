@@ -1,5 +1,5 @@
 import torch
-from tqdm.notebook import tqdm
+from tqdm import tqdm
 
 
 def train(model, train_loader, val_loader, device, criterion, optimizer, epochs):

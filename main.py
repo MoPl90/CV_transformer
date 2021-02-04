@@ -50,6 +50,7 @@ def main(args):
     os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
     os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
     os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
+    torch.device(args.device)
 
     transform_train = transforms.Compose([
                                           transforms.RandomCrop(32, padding=4),
