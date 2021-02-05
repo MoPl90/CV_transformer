@@ -3,7 +3,7 @@ import torch
 from torch import nn
 from einops import rearrange, repeat
 
-MIN_NUM_PATCHES = 16
+MIN_NUM_PATCHES = 15
 
 class VT(nn.Module):
     def __init__(self, args):
