@@ -2,9 +2,9 @@ import torch
 from tqdm import tqdm
 
 
-def train(model, train_loader, val_loader, device, criterion, optimizer, epochs):
+def train(model, train_loader, val_loader, device, criterion, optimizer, scheduler, epochs):
 
-    for epoch in range(epochs):
+    for epoch in range(1, epochs + 1):
         epoch_loss = 0
         epoch_accuracy = 0
 
@@ -37,6 +37,8 @@ def train(model, train_loader, val_loader, device, criterion, optimizer, epochs)
                 epoch_val_accuracy += acc / len(val_loader)
                 epoch_val_loss += val_loss / len(val_loader)
 
+        scheduler.step()
+
         print(
-            f"Epoch : {epoch+1} - loss : {epoch_loss:.4f} - acc: {epoch_accuracy:.4f} - val_loss : {epoch_val_loss:.4f} - val_acc: {epoch_val_accuracy:.4f}\n"
+            f"Epoch : {epoch} - loss : {epoch_loss:.4f} - acc: {epoch_accuracy:.4f} - val_loss : {epoch_val_loss:.4f} - val_acc: {epoch_val_accuracy:.4f}\n"
         )
