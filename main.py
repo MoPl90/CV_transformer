@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.optim.lr_scheduler import StepLR
 from torchvision import transforms, datasets
+from oasis import build_oasis
 import torchvision.transforms as transforms
 import argparse
 import numpy as np
@@ -57,7 +58,7 @@ def main(args):
     if args.channels == 1:
         pre_train_mean = np.mean(pre_train_mean)
         pre_train_std = np.mean(pre_train_std)
-
+    print(pre_train_mean, pre_train_std)
     transform_train = transforms.Compose([
                                           transforms.RandomCrop(32, padding=4),
                                           transforms.RandomHorizontalFlip(),
@@ -67,6 +68,7 @@ def main(args):
                                          ])
 
     transform_val = transforms.Compose([
+                                        transforms.Resize(32),
                                         transforms.ToTensor(),
                                         transforms.Normalize(pre_train_mean, pre_train_std),
                                        ])
@@ -75,13 +77,18 @@ def main(args):
     if args.data_set.lower() == 'cifar10':
         train_set    = datasets.CIFAR10(root='./data', train=True, download=True, transform=transform_train)
         train_loader = torch.utils.data.DataLoader(train_set, batch_size=args.batch_size, shuffle=True, num_workers=2)
-        val_set    = datasets.CIFAR10(root='./data', train=False, download=True, transform=transform_val)
-        val_loader = torch.utils.data.DataLoader(val_set, batch_size=100, shuffle=True, num_workers=2)
+        val_set      = datasets.CIFAR10(root='./data', train=False, download=True, transform=transform_val)
+        val_loader   = torch.utils.data.DataLoader(val_set, batch_size=100, shuffle=True, num_workers=2)
     elif args.data_set.lower() == 'mnist':
         train_set    = datasets.MNIST(root='./data', train=True, download=True, transform=transform_train)
         train_loader = torch.utils.data.DataLoader(train_set, batch_size=args.batch_size, shuffle=True, num_workers=2)
-        val_set    = datasets.MNIST(root='./data', train=False, download=True, transform=transform_val)
-        val_loader = torch.utils.data.DataLoader(val_set, batch_size=100, shuffle=True, num_workers=2)
+        val_set      = datasets.MNIST(root='./data', train=False, download=True, transform=transform_val)
+        val_loader   = torch.utils.data.DataLoader(val_set, batch_size=100, shuffle=True, num_workers=2)
+    elif args.data_set.lower() == 'oasis':
+        train_set    = build_oasis(root='/scratch/jzopes/data/oasis_project/Transformer/', train=True)
+        train_loader = torch.utils.data.DataLoader(train_set, batch_size=args.batch_size, shuffle=True, num_workers=2)
+        val_set      = build_oasis(root='/scratch/jzopes/data/oasis_project/Transformer/', train=False)
+        val_loader   = torch.utils.data.DataLoader(train_set, batch_size=args.batch_size, shuffle=True, num_workers=2)
     else:
         raise ValueError("Data set {} unknkown!".format(args.data_set))
 
