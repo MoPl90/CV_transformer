@@ -16,6 +16,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
 
     #data parameters
+    parser.add_argument('-da', '--data_set', help='Which data set to train on', type=str, default='cifar10')
     parser.add_argument('-i', '--image_size', help='(square) dimension of 2D input image', type=int)
     parser.add_argument('-p', '--patch_size', help='(square) dimension of 2D image patches', type=int)
     parser.add_argument('-ch', '--channels', help='image channels', type=int)
@@ -36,7 +37,7 @@ def parse_args():
     parser.add_argument('-e', '--epochs', help='number of epochs to train', type=int, default=20)
     parser.add_argument('-l', '--learning_rate', help='learning rate', type=float, default=3E-5)
     parser.add_argument('-ga', '--gamma', help='learning rate decay rate', type=float, default=0.7)
-    parser.add_argument('-g', '--gpu', help='GPU ID', type=str, default=0)
+    parser.add_argument('-g', '--gpu', help='GPU ID', type=str, default='0')
     parser.add_argument('-s', '--seed', help='random seed', type=int, default=42)
 
 
@@ -53,6 +54,10 @@ def main(args):
 
     pre_train_mean, pre_train_std = (0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)
 
+    if args.channels == 1:
+        pre_train_mean = np.mean(pre_train_mean)
+        pre_train_std = np.mean(pre_train_std)
+
     transform_train = transforms.Compose([
                                           transforms.RandomCrop(32, padding=4),
                                           transforms.RandomHorizontalFlip(),
@@ -66,10 +71,19 @@ def main(args):
                                         transforms.Normalize(pre_train_mean, pre_train_std),
                                        ])
 
-    train_set    = datasets.CIFAR10(root='./data', train=True, download=True, transform=transform_train)
-    train_loader = torch.utils.data.DataLoader(train_set, batch_size=args.batch_size, shuffle=True, num_workers=2)
-    val_set    = datasets.CIFAR10(root='./data', train=False, download=True, transform=transform_val)
-    val_loader = torch.utils.data.DataLoader(val_set, batch_size=100, shuffle=True, num_workers=2)
+
+    if args.data_set.lower() == 'cifar10':
+        train_set    = datasets.CIFAR10(root='./data', train=True, download=True, transform=transform_train)
+        train_loader = torch.utils.data.DataLoader(train_set, batch_size=args.batch_size, shuffle=True, num_workers=2)
+        val_set    = datasets.CIFAR10(root='./data', train=False, download=True, transform=transform_val)
+        val_loader = torch.utils.data.DataLoader(val_set, batch_size=100, shuffle=True, num_workers=2)
+    elif args.data_set.lower() == 'mnist':
+        train_set    = datasets.MNIST(root='./data', train=True, download=True, transform=transform_train)
+        train_loader = torch.utils.data.DataLoader(train_set, batch_size=args.batch_size, shuffle=True, num_workers=2)
+        val_set    = datasets.MNIST(root='./data', train=False, download=True, transform=transform_val)
+        val_loader = torch.utils.data.DataLoader(val_set, batch_size=100, shuffle=True, num_workers=2)
+    else:
+        raise ValueError("Data set {} unknkown!".format(args.data_set))
 
     model = VT(args).to(device)
     
