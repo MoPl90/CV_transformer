@@ -91,7 +91,7 @@ def main(args):
     # optimizer
     optimizer = optim.Adam(model.parameters(), lr=args.learning_rate)
     # scheduler
-    scheduler = StepLR(optimizer, step_size=0, gamma=args.gamma)
+    scheduler = StepLR(optimizer, step_size=10, gamma=args.gamma)
 
     train(model, train_loader, val_loader, device, criterion, optimizer, scheduler, args.epochs)
 

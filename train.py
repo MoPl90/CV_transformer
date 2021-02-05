@@ -4,7 +4,7 @@ from tqdm import tqdm
 
 def train(model, train_loader, val_loader, device, criterion, optimizer, scheduler, epochs):
 
-    for epoch in range(1, epochs + 1):
+    for epoch in range(0, epochs):
         epoch_loss = 0
         epoch_accuracy = 0
 
@@ -40,5 +40,5 @@ def train(model, train_loader, val_loader, device, criterion, optimizer, schedul
         scheduler.step()
 
         print(
-            f"Epoch : {epoch} - loss : {epoch_loss:.4f} - acc: {epoch_accuracy:.4f} - val_loss : {epoch_val_loss:.4f} - val_acc: {epoch_val_accuracy:.4f}\n"
+            f"Epoch : {epoch + 1} - loss : {epoch_loss:.4f} - acc: {epoch_accuracy:.4f} - val_loss : {epoch_val_loss:.4f} - val_acc: {epoch_val_accuracy:.4f}\n"
         )
