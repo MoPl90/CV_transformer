@@ -51,17 +51,19 @@ def main(args):
     os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
+    pre_train_mean, pre_train_std = (0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)
+
     transform_train = transforms.Compose([
                                           transforms.RandomCrop(32, padding=4),
                                           transforms.RandomHorizontalFlip(),
-                                          transforms.RandomAffine(degrees=(-15,15), translate=(.25,.25), scale=(.1,.3), shear=(-5,5)),
+                                        #   transforms.RandomAffine(degrees=(-15,15), translate=(.25,.25), scale=(.1,.3), shear=(-5,5)),
                                           transforms.ToTensor(),
-                                          transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+                                          transforms.Normalize(pre_train_mean, pre_train_std),
                                          ])
 
     transform_val = transforms.Compose([
                                         transforms.ToTensor(),
-                                        transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+                                        transforms.Normalize(pre_train_mean, pre_train_std),
                                        ])
 
     train_set    = datasets.CIFAR10(root='./data', train=True, download=True, transform=transform_train)
@@ -89,9 +91,9 @@ def main(args):
     # optimizer
     optimizer = optim.Adam(model.parameters(), lr=args.learning_rate)
     # scheduler
-    scheduler = StepLR(optimizer, step_size=1, gamma=args.gamma)
+    scheduler = StepLR(optimizer, step_size=0, gamma=args.gamma)
 
-    train(model, train_loader, val_loader, device, criterion, optimizer, args.epochs)
+    train(model, train_loader, val_loader, device, criterion, optimizer, scheduler, args.epochs)
 
 
 
