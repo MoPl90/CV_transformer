@@ -22,6 +22,8 @@ def parse_args():
     parser.add_argument('-p', '--patch_size', help='(square) dimension of 2D image patches', type=int)
     parser.add_argument('-ch', '--channels', help='image channels', type=int)
     parser.add_argument('-cl', '--num_classes', help='number of class labels', type=int)
+    parser.add_argument('-seg', '--segmentation', help='Labels are segmentations', type=bool, default=False)
+
 
     #model parameters
     parser.add_argument('-d', '--dim', help='internal model dimension', type=int, default=128)
@@ -58,7 +60,7 @@ def main(args):
     if args.channels == 1:
         pre_train_mean = np.mean(pre_train_mean)
         pre_train_std = np.mean(pre_train_std)
-    print(pre_train_mean, pre_train_std)
+
     transform_train = transforms.Compose([
                                           transforms.RandomCrop(32, padding=4),
                                           transforms.RandomHorizontalFlip(),

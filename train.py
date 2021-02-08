@@ -9,11 +9,14 @@ def train(model, train_loader, val_loader, device, criterion, optimizer, schedul
         epoch_accuracy = 0
 
         for data, label in tqdm(train_loader):
-            data = data.to(device)
-            label = label.to(device)
+            data = torch.as_tensor(data.to(device), dtype=torch.float)
+            label = torch.as_tensor(label.to(device), dtype=torch.int64)
 
             output = model(data)
-            loss = criterion(output, label)
+            if len(label.shape) > 2:
+                loss = criterion(output, torch.argmax(label, dim=1).long())
+            else:
+                loss = criterion(output, label)
 
             optimizer.zero_grad()
             loss.backward()
@@ -27,11 +30,14 @@ def train(model, train_loader, val_loader, device, criterion, optimizer, schedul
             epoch_val_accuracy = 0
             epoch_val_loss = 0
             for data, label in val_loader:
-                data = data.to(device)
-                label = label.to(device)
+                data = torch.as_tensor(data.to(device), dtype=torch.float)
+                label = torch.as_tensor(label.to(device), dtype=torch.int64)
 
                 val_output = model(data)
-                val_loss = criterion(val_output, label)
+                if len(label.shape) > 2:
+                    val_loss = criterion(val_output, torch.argmax(label, dim=1).long())
+                else:
+                    val_loss = criterion(val_output, label)
 
                 acc = (val_output.argmax(dim=1) == label).float().mean()
                 epoch_val_accuracy += acc / len(val_loader)
