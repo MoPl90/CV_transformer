@@ -2,6 +2,7 @@ from .components import Transformer
 import torch
 from torch import nn
 from einops import rearrange, repeat
+import numpy as np
 
 MIN_NUM_PATCHES = 15
 
@@ -10,14 +11,14 @@ class VT(nn.Module):
         super().__init__()
         assert args.image_size % args.patch_size == 0, 'Image dimensions must be divisible by the patch size.'
         num_patches = (args.image_size // args.patch_size) ** 2
-        patch_dim = args.channels * args.patch_size ** 2
+        self.patch_dim = args.channels * args.patch_size ** 2
         assert num_patches > MIN_NUM_PATCHES, f'your number of patches ({num_patches}) is way too small for attention to be effective (at least 16). Try decreasing your patch size'
         assert args.pool in {'cls', 'mean'}, 'pool type must be either cls (cls token) or mean (mean pooling)'
 
         self.patch_size = args.patch_size
 
         self.pos_embedding = nn.Parameter(torch.randn(1, num_patches + 1, args.dim))
-        self.patch_to_embedding = nn.Linear(patch_dim, args.dim)
+        self.patch_to_embedding = nn.Linear(self.patch_dim, args.dim)
         self.cls_token = nn.Parameter(torch.randn(1, 1, args.dim))
         self.dropout = nn.Dropout(args.emb_dropout)
 
@@ -26,10 +27,19 @@ class VT(nn.Module):
         self.pool = args.pool
         self.to_latent = nn.Identity()
 
-        self.mlp_head = nn.Sequential(
-            nn.LayerNorm(args.dim),
-            nn.Linear(args.dim, args.num_classes)
-        )
+        self.segmentation = args.segmentation
+        self.output_shape = (args.num_classes, args.image_size, args.image_size) if args. segmentation else args.num_classes
+
+        if self.segmentation:
+            self.mlp_head = nn.Sequential(
+                                            nn.LayerNorm(args.dim),
+                                            nn.Linear(args.dim, args.num_classes * args.image_size**2)
+                                         )
+        else:
+            self.mlp_head = nn.Sequential(
+                                            nn.LayerNorm(args.dim),
+                                            nn.Linear(args.dim, args.num_classes)
+                                         )
 
     def forward(self, img):
         p = self.patch_size
@@ -48,4 +58,8 @@ class VT(nn.Module):
         x = x.mean(dim = 1) if self.pool == 'mean' else x[:, 0]
 
         x = self.to_latent(x)
-        return self.mlp_head(x)
+        x = self.mlp_head(x)
+
+        if self.segmentation:
+            x = rearrange(x, 'b (c h w) -> b c h w', c=self.output_shape[0], h=self.output_shape[1], w=self.output_shape[2])
+        return x

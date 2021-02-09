@@ -1,8 +1,7 @@
 import torch
 import os
-
 import numpy as np
-
+from PIL import Image
 from torch.utils.data import Dataset, DataLoader
 
 from torchvision.datasets import VisionDataset
@@ -40,8 +39,9 @@ class OasisDataset(VisionDataset):
 		sample = (im, lb)#{'image': im, 'label': lb}
 		return sample
 
-def build_oasis(train=True, root='./'):
+def build_oasis(train=True, root='./', transform=None):
         
-	transforms = Compose([ToTensor()])
+	if transform is None:
+		transform = Compose([ToTensor()])
 
-	return OasisDataset(train, root, transforms)
+	return OasisDataset(train, root, transform)

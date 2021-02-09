@@ -34,6 +34,7 @@ def parse_args():
     parser.add_argument('-po', '--pool', help='pooling type;\"cls\" or \"mean\"', type=str, default='cls')
     parser.add_argument('-do', '--dropout', help='model droput rate', type=float, default=0.)
     parser.add_argument('-edo', '--emb_dropout', help='embedding droput rate', type=float, default=0.)
+    parser.add_argument('-n', '--name', help='model name for saving', type=str, default='model')
 
     #training parameters
     parser.add_argument('-b', '--batch_size', help='batch size for training', type=int, default=128)
@@ -87,10 +88,10 @@ def main(args):
         val_set      = datasets.MNIST(root='./data', train=False, download=True, transform=transform_val)
         val_loader   = torch.utils.data.DataLoader(val_set, batch_size=100, shuffle=True, num_workers=2)
     elif args.data_set.lower() == 'oasis':
-        train_set    = build_oasis(root='/scratch/jzopes/data/oasis_project/Transformer/', train=True)
+        train_set    = build_oasis(root='/scratch/jzopes/data/oasis_project/Transformer/', train=True, transform=None)#transform_train)
         train_loader = torch.utils.data.DataLoader(train_set, batch_size=args.batch_size, shuffle=True, num_workers=2)
-        val_set      = build_oasis(root='/scratch/jzopes/data/oasis_project/Transformer/', train=False)
-        val_loader   = torch.utils.data.DataLoader(train_set, batch_size=args.batch_size, shuffle=True, num_workers=2)
+        val_set      = build_oasis(root='/scratch/jzopes/data/oasis_project/Transformer/', train=False, transform=None)#transform_val)
+        val_loader   = torch.utils.data.DataLoader(val_set, batch_size=args.batch_size, shuffle=True, num_workers=2)
     else:
         raise ValueError("Data set {} unknkown!".format(args.data_set))
 
@@ -117,8 +118,9 @@ def main(args):
     scheduler = StepLR(optimizer, step_size=10, gamma=args.gamma)
 
     train(model, train_loader, val_loader, device, criterion, optimizer, scheduler, args.epochs)
-
-
+    
+    torch.save(model.state_dict(), 'data/' + args.name + '.pt')
+    
 
 if __name__ == '__main__':
 
