@@ -88,6 +88,19 @@ def main(args):
         val_set      = datasets.MNIST(root='./data', train=False, download=True, transform=transform_val)
         val_loader   = torch.utils.data.DataLoader(val_set, batch_size=100, shuffle=True, num_workers=2)
     elif args.data_set.lower() == 'oasis':
+
+        transform_train = transform_train = transforms.Compose([
+                                                                transforms.Resize(256),
+                                                                transforms.RandomCrop(224, padding=32),
+                                                                transforms.RandomAffine((-15,15), shear=(-5,5)),
+                                                                transforms.RandomHorizontalFlip(),
+                                                                transforms.ToTensor()
+                                                              ])
+
+        transform_val = transforms.Compose([
+                                            transforms.Resize(256),
+                                            transforms.ToTensor(),
+                                        ])
         train_set    = build_oasis(root='/scratch/jzopes/data/oasis_project/Transformer/', train=True, transform=None)#transform_train)
         train_loader = torch.utils.data.DataLoader(train_set, batch_size=args.batch_size, shuffle=True, num_workers=2)
         val_set      = build_oasis(root='/scratch/jzopes/data/oasis_project/Transformer/', train=False, transform=None)#transform_val)

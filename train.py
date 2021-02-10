@@ -18,7 +18,7 @@ def train(model, train_loader, val_loader, device, criterion, optimizer, schedul
             if len(label.shape) > 2:
                 criterion.weight = torch.tensor([0.1, 0.9]).to(device)
                 DSC = dice(output, label)
-                loss = criterion(output, label.squeeze(1)) + 1 - torch.sum(DSC) / len(DSC) #/ len(train_loader)
+                loss = criterion(output, label.squeeze(1)) + 1 - torch.sum(DSC) / len(DSC) 
             else:
                 loss = criterion(output, label)
 
