@@ -1,4 +1,4 @@
-from .components import Transformer
+from .components import Transformer, Decoder
 import torch
 from torch import nn
 from einops import rearrange, repeat
@@ -28,17 +28,19 @@ class VT(nn.Module):
         self.to_latent = nn.Identity()
 
         self.segmentation = args.segmentation
-        self.output_shape = (args.num_classes, args.image_size, args.image_size) if args. segmentation else args.num_classes
+        self.output_shape = (args.classes, args.image_size, args.image_size) if args. segmentation else args.classes
 
         if self.segmentation:
-            self.mlp_head = nn.Sequential(
-                                            nn.LayerNorm(args.dim),
-                                            nn.Linear(args.dim, args.num_classes * args.image_size**2)
-                                         )
+            self.decoder = Decoder(in_shape=(args.patch_size, args.patch_size), 
+                                   out_shape=self.output_shape[1:], 
+                                   c_in=args.dim // args.patch_size**2, 
+                                   c_out=args.classes, 
+                                   depth=int(np.log2(np.sqrt(num_patches))), 
+                                   dropout=args.dropout)
         else:
             self.mlp_head = nn.Sequential(
                                             nn.LayerNorm(args.dim),
-                                            nn.Linear(args.dim, args.num_classes)
+                                            nn.Linear(args.dim, args.classes)
                                          )
 
     def forward(self, img):
@@ -58,8 +60,12 @@ class VT(nn.Module):
         x = x.mean(dim = 1) if self.pool == 'mean' else x[:, 0]
 
         x = self.to_latent(x)
-        x = self.mlp_head(x)
 
         if self.segmentation:
-            x = rearrange(x, 'b (c h w) -> b c h w', c=self.output_shape[0], h=self.output_shape[1], w=self.output_shape[2])
+            x = rearrange(x, 'b (c h w) -> b c h w', h=self.patch_size, w=self.patch_size)
+            x = self.decoder(x)
+
+        else:
+            x = self.mlp_head(x)
         return x
+
