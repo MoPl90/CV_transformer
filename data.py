@@ -31,8 +31,11 @@ class OasisDataset(VisionDataset):
 	def __getitem__(self, idx):
 		im = np.load(os.path.join(self.root + '/' + self.ext_im, self.fnames[idx])).astype(np.uint8)
 		lb = np.load(os.path.join(self.root + '/' + self.ext_lb, self.fnames[idx])).astype(np.float32)
-
-		  
+                
+        #Add a channel axis
+		im = np.expand_dims(im, axis=0)
+		lb = np.expand_dims(lb, axis=0)
+                
 		seed = np.random.randint(2147483647) # make a seed with numpy generator 
 		random.seed(seed) # apply this seed to img tranfsorms
 		torch.manual_seed(seed) # needed for torchvision 0.7

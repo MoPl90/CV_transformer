@@ -75,7 +75,6 @@ def train(model, train_loader, val_loader, device, criterion, optimizer, schedul
                     break
 
         val.append(val_dice_mean)
-        print(val)
 
         scheduler.step()
 

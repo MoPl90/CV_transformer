@@ -5,10 +5,9 @@ from einops import rearrange
 
 def dice(prediction, target, train=True, classes=2, eps=1E-6):
 
-    #if train:
-    #    prediction = torch.softmax(prediction, dim=1)
-    #else:
-    if not train:
+    if train:
+        prediction = torch.softmax(prediction, dim=1)
+    else:
         prediction = torch.argmax(prediction, dim=1)
         prediction = F.one_hot(prediction, num_classes=classes)
         if len(prediction.shape) == 4:
