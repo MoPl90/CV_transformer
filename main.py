@@ -19,6 +19,7 @@ def parse_args():
 
     #data parameters
     parser.add_argument('-da', '--data_set', help='Which data set to train on', type=str, default='cifar10')
+    parser.add_argument('-dd', '--data_dim', help='Data dimensions', type=int, default=2)
     parser.add_argument('-i', '--image_size', help='(square) dimension of 2D input image', type=int)
     parser.add_argument('-p', '--patch_size', help='(square) dimension of 2D image patches', type=int)
     parser.add_argument('-ch', '--channels', help='image channels', type=int)
@@ -52,12 +53,12 @@ def parse_args():
 
     return args
 
-def get_weights(set, reps=20):
+def get_weights(set, reps=20, classes=2):
 
     w=0
     for _ in range(reps):
         rand_sample = set[np.random.randint(len(set))][1]
-        occ = np.array([np.sum(rand_sample == i) for i in np.unique(rand_sample)])
+        occ = np.array([np.sum(rand_sample == i) for i in np.arange(classes)])
         w += 1 - occ / np.sum(occ)
     
     return np.asarray(w) / reps
@@ -159,7 +160,7 @@ def main(args):
     # scheduler
     scheduler = StepLR(optimizer, step_size=10, gamma=args.gamma)
     
-    train(model, train_loader, val_loader, device, criterion, optimizer, scheduler, args.epochs, args.classes, get_weights(train_set), args.patience, args.name)
+    train(model, train_loader, val_loader, device, criterion, optimizer, scheduler, args.epochs, args.classes, get_weights(train_set, classes=args.classes), args.patience, args.name)
     
     torch.save(model.state_dict(), 'data/' + args.name + '.pt')
     
